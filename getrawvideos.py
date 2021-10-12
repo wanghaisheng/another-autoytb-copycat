@@ -35,31 +35,30 @@ with open('cookies.json') as f:
     for cookie in cookie_list[1:]:
         requests.utils.add_dict_to_cookiejar(cookie_jar, stringify(cookie))
     session.cookies = cookie_jar
+    idlist=[]    
     for i in range(1,20):
-        payload = {'search_type': 'video', 'keyword': '哈利波特魔法觉醒','order':'pubdate','duration':'2','page':i}
+        payload = {'search_type': 'video', 'keyword': '骗局','order':'pubdate','duration':'2','page':i}
         r = session.get('http://api.bilibili.com/x/web-interface/search/type', params=payload)
         # print(r.json().keys())
         results.extend(r.json()["data"]["result"])
-idlist=[]
-titlelist=[]
-for i,item in enumerate(results):
-    idlist.append(item['arcurl'])
-    result={"title":item['title'],
-    "tag":item['tag'],
-    "description":item['description']+"original video from\r\n"+item['arcurl']}
-    if not os.path.exists(str(item['id'])):
-        os.makedirs(str(item['id']))
-    os.chdir(str(item['id']))
-    ydl_opts = {}
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(item['arcurl'])
-                # ydl.download([item['arcurl']])
+        for i,item in enumerate(r.json()["data"]["result"]):
 
-        with open(str(item['id'])+'.json', 'w') as outfile:
-            json.dump(result, outfile)        
-    # titlelist.append(item['title']+' '+item['description'])
-    os.chdir("..")
 
-print('found videos numbers',len(idlist))
-with open('videolist.txt', 'w') as outfile:
-    json.dump(idlist, outfile)
+            result={"title":item['title'],
+            "tag":item['tag'],
+            "description":item['description']+"original video from\r\n"+item['arcurl']}
+            if not os.path.exists(str(item['id'])):
+                os.makedirs(str(item['id']))
+            os.chdir(str(item['id']))
+            ydl_opts = {}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(item['arcurl'])
+                        # ydl.download([item['arcurl']])
+
+                with open(str(item['id'])+'.json', 'w') as outfile:
+                    json.dump(result, outfile)    
+            os.chdir("..")
+            idlist.append(item['arcurl'])
+    print('found videos numbers',len(idlist))
+    with open('videolist.txt', 'w') as outfile:
+        json.dump(idlist, outfile)
